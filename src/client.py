@@ -1,10 +1,10 @@
-"""."""
+"""Module to create a client server."""
 
 import socket
 
 
 def client(message, buffer=8):
-    """."""
+    """Send a message to a server and returns the response string."""
     infos = socket.getaddrinfo('127.0.0.1', 5001)
     stream_info = [i for i in infos if i[1] == socket.SOCK_STREAM][0]
     client = socket.socket(*stream_info[:3])

@@ -1,11 +1,11 @@
-"""."""
+"""Module to create an echo server."""
 
 import socket
 import sys
 
 
 def server():
-    """."""
+    """Accept client connection and sends response back to client."""
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
