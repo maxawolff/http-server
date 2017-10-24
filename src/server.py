@@ -17,16 +17,22 @@ def server():
     while True:
         try:
             conn, addr = server.accept()
-            message = ''
+            request = ''
             if conn:
                 buffer_length = 8
                 message_complete = False
                 while not message_complete:
                     part = conn.recv(buffer_length)
-                    message += part.decode('utf8')
-                    if len(part) < buffer_length or not len(part):
+                    request += part.decode('utf8')
+                    if len(part) < buffer_length:
                         break
-                conn.sendall(message.encode('utf8'))
+                if request[-1] == ' ':
+                    request = request[0:len(request) - 1]
+                sys.stdout.write(request)
+                reply = response_ok()
+                if len(reply) % 8 == 0:
+                    reply += " "
+                conn.sendall(reply.encode('utf8'))
                 conn.close()
         except KeyboardInterrupt:
             server.close()
