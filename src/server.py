@@ -33,5 +33,19 @@ def server():
             sys.exit()
 
 
+def response_ok():
+    """Return a 200 ok response."""
+    header = """HTTP/1.1 200 OK\r\nContent-Type:
+     text/plain\r\n\r\nthis is a response"""
+    return header
+
+
+def response_error():
+    """Return a 500 interernal server error message."""
+    header = """HTTP/1.1 500 Internal Server Error\r\nContent-Type:
+     text/plain\r\n\r\nthis is a response"""
+    return header
+
+
 if __name__ == '__main__':
     server()
