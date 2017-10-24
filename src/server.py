@@ -19,13 +19,11 @@ def server():
             if conn:
                 buffer_length = 8
                 message_complete = False
-                # last_message = ""
                 while not message_complete:
                     part = conn.recv(buffer_length)
                     message += part.decode('utf8')
-                    if len(part) < buffer_length or len(part) == 0:
+                    if len(part) < buffer_length or not len(part):
                         break
-                    # last_message += part.decode('utf8')
                 conn.sendall(message.encode('utf8'))
                 conn.close()
         except KeyboardInterrupt:
