@@ -17,20 +17,40 @@ def server():
     while True:
         try:
             conn, addr = server.accept()
-            message = ''
+            request = ''
             if conn:
                 buffer_length = 8
                 message_complete = False
                 while not message_complete:
                     part = conn.recv(buffer_length)
-                    message += part.decode('utf8')
-                    if len(part) < buffer_length or not len(part):
+                    request += part.decode('utf8')
+                    if len(part) < buffer_length:
                         break
-                conn.sendall(message.encode('utf8'))
+                if request[-1] == ' ':
+                    request = request[0:len(request) - 1]
+                sys.stdout.write(request)
+                reply = response_ok()
+                if len(reply) % 8 == 0:
+                    reply += " "
+                conn.sendall(reply.encode('utf8'))
                 conn.close()
         except KeyboardInterrupt:
             server.close()
             sys.exit()
+
+
+def response_ok():
+    """Return a 200 ok response."""
+    header = """HTTP/1.1 200 OK\r\nContent-Type:
+     text/plain\r\n\r\nthis is a response"""
+    return header
+
+
+def response_error():
+    """Return a 500 interernal server error message."""
+    header = """HTTP/1.1 500 Internal Server Error\r\nContent-Type:
+     text/plain\r\n\r\nthis is a response"""
+    return header
 
 
 if __name__ == '__main__':
