@@ -54,5 +54,13 @@ def test_response_ok_end_header():
 def test_response_error():
     """Test to see if response error returns a correct error message."""
     from server import response_error
-    assert response_error() == """HTTP/1.1 500 Internal Server Error\r\nContent-Type:
-     text/plain\r\n\r\nthis is a response"""
+    valid_header = "HTTP/1.1 500 Internal Server Error"
+    assert response_error()[0:34] == valid_header
+
+
+def test_response_error_end_header():
+    """Test to make sure response header has two CLRFs, i.e end of header."""
+    from server import response_error
+    end_header = '\r\n\r\n'
+    response = response_error()
+    assert end_header in response
