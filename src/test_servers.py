@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
 """Test for functionality of client and server.py."""
+
+from __future__ import unicode_literals
 
 
 def test_message_shorter():
