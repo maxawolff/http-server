@@ -14,13 +14,15 @@ def client(message, buffer=8):
     buffer_length = buffer
     reply_complete = False
     reply_string = ""
+    last_reply = ""
     while not reply_complete:
         part = client.recv(buffer_length)
         reply_string += part.decode("utf8")
-        if len(part) < buffer_length:
+        if len(part) < buffer_length or last_reply == reply_string:
             break
+        last_reply += part.decode("utf8")
     client.close()
-    print(reply_string)
+    return(reply_string)
 
 
 if __name__ == '__main__':
