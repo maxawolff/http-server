@@ -55,24 +55,24 @@ def test_response_ok_end_header():
 def test_response_error():
     """Test to see if response error returns a correct error message."""
     from server import response_error
-    valid_header = "HTTP/1.1 500 Internal Server Error"
-    assert response_error()[0:34] == valid_header
+    valid_header = "HTTP/1.1 500 Internal Server Error\r\n\r\n"
+    assert response_error(500, "Internal Server Error") == valid_header
 
 
 def test_response_error_end_header():
     """Test to make sure response header has two CLRFs, i.e end of header."""
     from server import response_error
     end_header = '\r\n\r\n'
-    response = response_error()
+    response = response_error(500, "Internal Server Error")
     assert end_header in response
 
 
-def test_response_from_server_received():
-    """Test that response received from server is valid response."""
-    from client import client
-    from server import response_ok
-    received_response = client("testtest")
-    assert received_response == response_ok()
+# def test_response_from_server_received():
+#     """Test that response received from server is valid response."""
+#     from client import client
+#     from server import response_ok
+#     received_response = client("testtest")
+#     assert received_response == response_ok()
 
 
 def test_parse_non_get_request_raises_exception():
@@ -122,8 +122,7 @@ def test_parse_host_header_not_valid():
         parse_request(response)
 
 
-# def test_parse_request_good_request():
-#     """Test to make sure a good request returns the proper URI."""
-#     from server import parse_request
-#     response =
-#     assert parse_request(response) == URI
+def test_response_error_returns_valid_response_header():
+    """Test that the error_response returns a correctly formed http error response."""
+    from server import response_error
+    assert response_error(404, "Not Found") == "HTTP/1.1 404 Not Found\r\n\r\n"

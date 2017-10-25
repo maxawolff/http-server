@@ -46,11 +46,11 @@ def response_ok():
     return header
 
 
-def response_error():
-    """Return a 500 interernal server error message."""
-    header = """HTTP/1.1 500 Internal Server Error\r\nContent-Type:
-     text/plain\r\n\r\nthis is a response"""
-    return header
+def response_error(error_code, reason_phrase):
+    """Return a well-formed HTTP error response."""
+    response = "HTTP/1.1 "
+    response += str(error_code) + " " + reason_phrase + "\r\n\r\n"
+    return response
 
 
 def parse_request(request):
