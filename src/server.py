@@ -11,46 +11,65 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ('127.0.0.1', 5002)
+    address = ('127.0.0.1', 5003)
     server.bind(address)
     server.listen(1)
     while True:
         try:
             conn, addr = server.accept()
-            request = ''
+            request = b''
             if conn:
                 buffer_length = 8
                 message_complete = False
                 while not message_complete:
                     part = conn.recv(buffer_length)
-                    request += part.decode('utf8')
-                    if len(part) < buffer_length:
+                    request += part
+                    if "%@#!" in request:
                         break
-                if request[-1] == ' ':
-                    request = request[0:len(request) - 1]
-                sys.stdout.write(request)
-                reply = response_ok()
-                if len(reply) % 8 == 0:
-                    reply += " "
-                conn.sendall(reply.encode('utf8'))
+                sys.stdout.write(request.decode("utf8").replace("%@#!", ""))
+                reply = b""
+                try:
+                    reply = parse_request(request)
+                    reply = response_ok(reply)
+                except ValueError:
+                    reply = response_error(400, "Bad Request")
+                reply += b"%@#!"
+                conn.sendall(reply)
                 conn.close()
         except KeyboardInterrupt:
             server.close()
             sys.exit()
 
-
-def response_ok():
+            
+def response_ok(uri):
     """Return a 200 ok response."""
-    header = """HTTP/1.1 200 OK\r\nContent-Type:
-     text/plain\r\n\r\nthis is a response"""
-    return header
+    return b"HTTP/1.1 200 OK\r\n\r\n" + uri
 
 
-def response_error():
-    """Return a 500 interernal server error message."""
-    header = """HTTP/1.1 500 Internal Server Error\r\nContent-Type:
-     text/plain\r\n\r\nthis is a response"""
-    return header
+def response_error(error_code, reason_phrase):
+    """Return a well-formed HTTP error response."""
+    response = "HTTP/1.1 "
+    response += str(error_code) + " " + reason_phrase + "\r\n\r\n"
+    return response
+
+
+def parse_request(request):
+    """Return the URI of the request if it is a valid get request."""
+    request = request.decode('utf8')
+    header = request[:request.index('\r\n')]
+    list_of_headers = header.split()
+    if list_of_headers[0] != 'GET':
+        raise ValueError("Request method must be GET")
+    if list_of_headers[2] != 'HTTP/1.1':
+        raise ValueError("Request protocol must use HTTP/1.1")
+    host = request.split("\r\n")[1]
+    if not host.startswith("Host: "):
+        raise ValueError("Request must include the Host header")
+    address = host.split()[1]
+    if not address.split('.')[0] == 'www' or not address.split('.')[2] \
+            == 'com':
+        raise ValueError("Invalid domain in host header")
+    return list_of_headers[1].encode('utf8')
 
 
 if __name__ == '__main__':
