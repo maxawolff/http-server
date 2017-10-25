@@ -40,7 +40,7 @@ def server():
             server.close()
             sys.exit()
 
-
+            
 def response_ok(uri):
     """Return a 200 ok response."""
     return b"HTTP/1.1 200 OK\r\n\r\n" + uri

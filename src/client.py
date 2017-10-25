@@ -15,7 +15,6 @@ def client(message, buffer=8):
     if sys.version_info.major == 3:
         message = message.encode('utf8')
     client.sendall(message)
-
     buffer_length = buffer
     reply_complete = False
     reply_string = b""
