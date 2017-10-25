@@ -40,7 +40,7 @@ import pytest
 def test_parse_non_get_request_raises_exception():
     """A request that is not a get request should raise an exception."""
     from server import parse_request
-    response = b'POST /path/file.html HTTP/1.1\r\nHost:: www.host1.com\r\n\r\n'
+    response = b'POST /path/file.html HTTP/1.1\r\nHost: www.host1.com\r\n\r\n'
     with pytest.raises(ValueError):
         parse_request(response)
 
@@ -48,9 +48,41 @@ def test_parse_non_get_request_raises_exception():
 def test_parse_bad_protocol_raises_exception():
     """A request must use http 1.1 or it will raise an exception."""
     from server import parse_request
-    response = b'GET /path/file.html HTTP/1.0\r\nHost:: www.host1.com\r\n\r\n'
+    response = b'GET /path/file.html HTTP/1.0\r\nHost: www.host1.com\r\n\r\n'
     with pytest.raises(ValueError):
         parse_request(response)
+
+
+def test_parse_correct_protocol_doesnt_raise_exception():
+    """A request must use http 1.1 or it will raise an exception."""
+    from server import parse_request
+    response = b'GET /path/file.html HTTP/1.1\r\nHost: www.host1.com\r\n\r\n'
+    assert parse_request(response) == '/path/file.html'
+
+
+def test_parse_bad_host_header():
+    """A request must have a proper host header."""
+    from server import parse_request
+    response = b'GET /path/file.html HTTP/1.1\r\nHost:www.host1.com\r\n\r\n'
+    with pytest.raises(ValueError):
+        parse_request(response)
+
+
+def test_parse_host_bad_domain():
+    """A request must have a proper host header."""
+    from server import parse_request
+    response = b'GET /path/file.html HTTP/1.1\r\nHost: www.host1.dom\r\n\r\n'
+    with pytest.raises(ValueError):
+        parse_request(response)
+
+
+def test_parse_host_header_not_valid():
+    """A request must have a proper host header."""
+    from server import parse_request
+    response = b'GET /path/file.html HTTP/1.1\r\nHost: ww.host1.com\r\n\r\n'
+    with pytest.raises(ValueError):
+        parse_request(response)
+
 
 # def test_parse_request_good_request():
 #     """Test to make sure a good request returns the proper URI."""

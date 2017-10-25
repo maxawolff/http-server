@@ -40,8 +40,15 @@ def parse_request(request):
     list_of_headers = header.split()
     if list_of_headers[0] != 'GET':
         raise ValueError("Request method must be GET")
-    if list_of_headers[2] != 'HTTP/1.1\r\n':
+    if list_of_headers[2] != 'HTTP/1.1':
         raise ValueError("Request protocol must use HTTP/1.1")
+    host = request.split("\r\n")[1]
+    if not host.startswith("Host: "):
+        raise ValueError("Request must include the Host header")
+    address = host.split()[1]
+    if not address.split('.')[0] == 'www' or not address.split('.')[2] == 'com':
+        raise ValueError("Invalid domain in host header")
+    return list_of_headers[1]
 
 
 if __name__ == '__main__':
