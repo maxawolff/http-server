@@ -11,10 +11,10 @@ def client(message, buffer=8):
     stream_info = [i for i in infos if i[1] == socket.SOCK_STREAM][0]
     client = socket.socket(*stream_info[:3])
     client.connect(stream_info[-1])
-    space_added = False
+    # space_added = False
     if len(message) % buffer == 0:
         message += " "
-        space_added = True
+        # space_added = True
     client.sendall(message.encode('utf8'))
 
     buffer_length = buffer
@@ -26,10 +26,11 @@ def client(message, buffer=8):
         if len(part) < buffer_length or not len(part):
             break
     client.close()
-    if space_added:
-        return(reply_string[0:len(reply_string) - 1])
-    else:
-        return(reply_string)
+    # if space_added:
+    #     return(reply_string[0:len(reply_string) - 1])
+    # else:
+    #     return(reply_string)
+    return reply_string
 
 
 if __name__ == '__main__':
