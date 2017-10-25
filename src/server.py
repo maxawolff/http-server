@@ -33,5 +33,16 @@ def server():
             sys.exit()
 
 
+def parse_request(request):
+    """Return the URI of the request if it is a valid get request."""
+    request = request.decode('utf8')
+    header = request[:request.index('\r\n')]
+    list_of_headers = header.split()
+    if list_of_headers[0] != 'GET':
+        raise ValueError("Request method must be GET")
+    if list_of_headers[2] != 'HTTP/1.1\r\n':
+        raise ValueError("Request protocol must use HTTP/1.1")
+
+
 if __name__ == '__main__':
     server()
