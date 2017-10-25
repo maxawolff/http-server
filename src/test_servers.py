@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test for functionality of client and server.py."""
 
-from __future__ import unicode_literals
 import pytest
 
 
@@ -40,15 +39,15 @@ import pytest
 def test_response_ok_valid_header():
     """Test to see if response ok returns an HTTP 200 ok response."""
     from server import response_ok
-    valid_header = "HTTP/1.1 200 OK"
-    assert response_ok()[0:15] == valid_header
+    valid_header = b"HTTP/1.1 200 OK"
+    assert response_ok(b"/path/file.html")[0:15] == valid_header
 
 
 def test_response_ok_end_header():
     """Test to make sure response header has two CLRFs, i.e end of header."""
     from server import response_ok
-    end_header = '\r\n\r\n'
-    response = response_ok()
+    end_header = b'\r\n\r\n'
+    response = response_ok(b"/path/file.html")
     assert end_header in response
 
 
@@ -67,12 +66,13 @@ def test_response_error_end_header():
     assert end_header in response
 
 
-# def test_response_from_server_received():
-#     """Test that response received from server is valid response."""
-#     from client import client
-#     from server import response_ok
-#     received_response = client("testtest")
-#     assert received_response == response_ok()
+def test_response_from_server_received():
+    """Test that response received from server is valid response."""
+    from client import client
+    from server import response_ok
+    response = client(u"GET /path/file.html HTTP/1.1\r\nHost: "
+                      u"www.host1.com\r\n\r\n")
+    assert response == response_ok(b"/path/file.html").decode("utf8")
 
 
 def test_parse_non_get_request_raises_exception():
@@ -95,7 +95,7 @@ def test_parse_correct_protocol_doesnt_raise_exception():
     """A request must use http 1.1 or it will raise an exception."""
     from server import parse_request
     response = b'GET /path/file.html HTTP/1.1\r\nHost: www.host1.com\r\n\r\n'
-    assert parse_request(response) == '/path/file.html'
+    assert parse_request(response) == b'/path/file.html'
 
 
 def test_parse_bad_host_header():
@@ -123,6 +123,6 @@ def test_parse_host_header_not_valid():
 
 
 def test_response_error_returns_valid_response_header():
-    """Test that the error_response returns a correctly formed http error response."""
+    """Test that the error_response returns a correctly formed response."""
     from server import response_error
     assert response_error(404, "Not Found") == "HTTP/1.1 404 Not Found\r\n\r\n"
