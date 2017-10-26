@@ -24,7 +24,7 @@ def server():
                 while not message_complete:
                     part = conn.recv(buffer_length)
                     request += part
-                    if "%@#!" in request:
+                    if b"%@#!" in request:
                         break
                 sys.stdout.write(request.decode("utf8").replace("%@#!", ""))
                 reply = b""
@@ -40,7 +40,7 @@ def server():
             server.close()
             sys.exit()
 
-            
+
 def response_ok(uri):
     """Return a 200 ok response."""
     return b"HTTP/1.1 200 OK\r\n\r\n" + uri
@@ -70,6 +70,27 @@ def parse_request(request):
             == 'com':
         raise ValueError("Invalid domain in host header")
     return list_of_headers[1].encode('utf8')
+
+
+def resolve_uri(uri):
+    """Return a response body with the content and the type of file."""
+    import mimetypes
+    import io
+    import os
+    if os.path.exists(uri):
+        type_of_file = mimetypes.guess_type(uri)[0]
+        if type_of_file.startswith('image'):
+            file = io.open(uri, 'rb')
+            file_content = file.read()
+            file.close()
+            return (file_content, type_of_file)
+        else:
+            file = io.open(uri)
+            file_content = file.read()
+            file.close()
+            return (file_content, type_of_file)
+    else:
+        raise ValueError("No file or directory of the given name")
 
 
 if __name__ == '__main__':
