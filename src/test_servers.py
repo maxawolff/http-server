@@ -70,9 +70,9 @@ def test_response_from_server_received():
     """Test that response received from server is valid response."""
     from client import client
     from server import response_ok
-    response = client(u"GET /path/file.html HTTP/1.1\r\nHost: "
+    response = client(u"GET webroot/sample.txt HTTP/1.1\r\nHost: "
                       u"www.host1.com\r\n\r\n")
-    assert response == response_ok(b"/path/file.html").decode("utf8")
+    assert response == response_ok(b"webroot/sample.txt").decode("utf8")
 
 
 def test_parse_non_get_request_raises_exception():
@@ -222,5 +222,5 @@ def test_resolve_uri_returns_html_for_directory():
 def test_response_ok_contains_message_body():
     """Test that ok_response also contains valid response body."""
     from server import response_ok
-    return_val = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 95\r\nThis is a very simple text file.\nJust to show that we can serve it up.\nIt is three lines long.\n"
+    return_val = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 95\r\n\r\nThis is a very simple text file.\nJust to show that we can serve it up.\nIt is three lines long.\n"
     assert response_ok('webroot/sample.txt') == return_val
