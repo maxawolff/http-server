@@ -43,7 +43,17 @@ def server():
 
 def response_ok(uri):
     """Return a 200 ok response."""
-    return b"HTTP/1.1 200 OK\r\n\r\n" + uri
+    response_header = "HTTP/1.1 200 OK\r\n"
+    resolved_uri_contents = resolve_uri(uri)
+    response_type_header = "Content-Type: " + resolved_uri_contents[1] + "\r\n"
+    response_header += response_type_header
+    response_len = len(resolved_uri_contents[0])
+    response_len_header = "Content-Length: " + str(response_len) + "\r\n"
+    response_header += response_len_header
+    if "image" in resolved_uri_contents[1]:
+        resolved_uri_contents[0].decode("utf8")
+    full_response = response_header + "\r\n" + resolved_uri_contents[0]
+    return full_response
 
 
 def response_error(error_code, reason_phrase):
@@ -78,6 +88,19 @@ def resolve_uri(uri):
     import io
     import os
     if os.path.exists(uri):
+        if (os.path.isdir(uri)):
+            list_of_files = os.listdir(uri.decode("utf8"))
+            directory_contents = ""
+            for file in list_of_files:
+                directory_contents += "<li>" + file + "</li>\n"
+            html_response = """<!DOCTYPE html>
+<html>
+<body>
+<ul>
+%s</ul>
+</body>
+</html>""" % directory_contents
+            return (html_response, "text/html")
         type_of_file = mimetypes.guess_type(uri)[0]
         if type_of_file.startswith('image'):
             file = io.open(uri, 'rb')

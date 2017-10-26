@@ -196,3 +196,31 @@ def test_resolve_raises_error_bad_path():
     from server import resolve_uri
     with pytest.raises(ValueError):
         resolve_uri('webrot/make_time.py')
+
+
+def test_resolve_uri_returns_html_for_directory():
+    """Should return an html listing of contents when passed directory."""
+    from server import resolve_uri
+    return_val = ("""<!DOCTYPE html>
+<html>
+<body>
+<ul>
+<li>._images</li>
+<li>a_web_page.html</li>
+<li>._make_time.py</li>
+<li>make_time.py</li>
+<li>sample.txt</li>
+<li>._sample.txt</li>
+<li>._a_web_page.html</li>
+<li>images</li>
+</ul>
+</body>
+</html>""", "text/html")
+    assert return_val == resolve_uri(b'webroot')
+
+
+def test_response_ok_contains_message_body():
+    """Test that ok_response also contains valid response body."""
+    from server import response_ok
+    return_val = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 95\r\nThis is a very simple text file.\nJust to show that we can serve it up.\nIt is three lines long.\n"
+    assert response_ok('webroot/sample.txt') == return_val
