@@ -11,7 +11,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ('127.0.0.1', 5003)
+    address = ('127.0.0.1', 5009)
     server.bind(address)
     server.listen(1)
     while True:
@@ -32,7 +32,7 @@ def server():
                     reply = parse_request(request)
                     reply = response_ok(reply)
                 except ValueError:
-                    reply = response_error(400, "Bad Request")
+                    reply = response_error(400, b"Bad Request")
                 reply += b"%@#!"
                 conn.sendall(reply)
                 conn.close()
@@ -43,23 +43,23 @@ def server():
 
 def response_ok(uri):
     """Return a 200 ok response."""
-    response_header = "HTTP/1.1 200 OK\r\n"
+    response_header = b"HTTP/1.1 200 OK\r\n"
     resolved_uri_contents = resolve_uri(uri)
     response_type_header = "Content-Type: " + resolved_uri_contents[1] + "\r\n"
-    response_header += response_type_header
+    response_header += response_type_header.encode('utf8')
     response_len = len(resolved_uri_contents[0])
     response_len_header = "Content-Length: " + str(response_len) + "\r\n"
-    response_header += response_len_header
+    response_header += response_len_header.encode('utf8')
     if "image" in resolved_uri_contents[1]:
         resolved_uri_contents[0].decode("utf8")
-    full_response = response_header + "\r\n" + resolved_uri_contents[0]
+    full_response = response_header + b"\r\n" + resolved_uri_contents[0].encode('utf8')
     return full_response
 
 
 def response_error(error_code, reason_phrase):
     """Return a well-formed HTTP error response."""
-    response = "HTTP/1.1 "
-    response += str(error_code) + " " + reason_phrase + "\r\n\r\n"
+    response = b"HTTP/1.1 "
+    response += str(error_code).encode('utf8') + b" " + reason_phrase.encode('utf8') + b"\r\n\r\n"
     return response
 
 
@@ -87,9 +87,9 @@ def resolve_uri(uri):
     import mimetypes
     import io
     import os
-    if os.path.exists(uri):
+    if os.path.exists(uri.decode('utf8')):  # posible error since in byte not unicode
         if (os.path.isdir(uri)):
-            list_of_files = os.listdir(uri.decode("utf8"))
+            list_of_files = os.listdir(uri)
             directory_contents = ""
             for file in list_of_files:
                 directory_contents += "<li>" + file + "</li>\n"
