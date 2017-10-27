@@ -76,8 +76,7 @@ def parse_request(request):
     if not host.startswith("Host: "):
         raise ValueError("Request must include the Host header")
     address = host.split()[1]
-    if not address.split('.')[0] == 'www' or not address.split('.')[2] \
-            == 'com':
+    if address.split('.')[0] != 'www' or address.split('.')[2] != 'com':
         raise ValueError("Invalid domain in host header")
     return list_of_headers[1].encode('utf8')
 
@@ -87,7 +86,7 @@ def resolve_uri(uri):
     import mimetypes
     import io
     import os
-    if os.path.exists(uri.decode('utf8')):  # posible error since in byte not unicode
+    if os.path.exists(uri):  # posible error since in byte not unicode
         if (os.path.isdir(uri)):
             list_of_files = os.listdir(uri)
             directory_contents = ""

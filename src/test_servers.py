@@ -36,18 +36,11 @@ import pytest
 #                                über-important information"
 
 
-def test_response_ok_valid_header():
-    """Test to see if response ok returns an HTTP 200 ok response."""
-    from server import response_ok
-    valid_header = b"HTTP/1.1 200 OK"
-    assert response_ok("/webroot/sample.txt") == valid_header
-
-
 def test_response_ok_end_header():
     """Test to make sure response header has two CLRFs, i.e end of header."""
     from server import response_ok
     end_header = b'\r\n\r\n'
-    response = response_ok(b"/webroot/a_web_page.html")
+    response = response_ok("webroot/a_web_page.html")
     assert end_header in response
 
 
@@ -70,8 +63,7 @@ def test_response_from_server_received():
     """Test that response received from server is valid response."""
     from client import client
     from server import response_ok
-    response = client(u"GET webroot/sample.txt HTTP/1.1\r\nHost: "
-                      u"www.host1.com\r\n\r\n")
+    response = client(u"GET webroot/sample.txt HTTP/1.1\r\nHost: www.host1.com\r\n\r\n")
     assert response == response_ok("webroot/sample.txt").decode("utf8")
 
 
@@ -203,8 +195,8 @@ def test_resolve_uri_returns_html_for_directory():
     from server import resolve_uri
     file1 = 'sample.txt'
     file2 = 'a_web_page.html'
-    assert file1 in resolve_uri(b'webroot')[0]
-    assert file2 in resolve_uri(b'webroot')[0]
+    assert file1 in resolve_uri('webroot')[0]
+    assert file2 in resolve_uri('webroot')[0]
 
 
 def test_response_ok_contains_message_body():
