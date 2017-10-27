@@ -100,7 +100,7 @@ def resolve_uri(uri):
 </body>
 </html>""" % directory_contents
             return (html_response, "text/html")
-        type_of_file = mimetypes.guess_type(uri)[0]
+        type_of_file = mimetypes.guess_type(uri.decode('utf8'))[0]
         if type_of_file.startswith('image'):
             file = io.open(uri, 'rb')
             file_content = file.read()
