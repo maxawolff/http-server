@@ -1,43 +1,33 @@
-# -*- coding: utf-8 -*-
-"""Module to create an echo server."""
+"""Module to create a simple server using gevent."""
 
 from __future__ import unicode_literals
-import socket
 import sys
 
 
-def server():
-    """Accept client connection and sends response back to client."""
-    server = socket.socket(socket.AF_INET,
-                           socket.SOCK_STREAM,
-                           socket.IPPROTO_TCP)
-    address = ('127.0.0.1', 5004)
-    server.bind(address)
-    server.listen(1)
+def http_server(socket, address):
+    """Handle incoming connections and send appropriate response."""
+    buffer_length = 8
     while True:
         try:
-            conn, addr = server.accept()
             request = b''
-            if conn:
-                buffer_length = 8
-                message_complete = False
-                while not message_complete:
-                    part = conn.recv(buffer_length)
-                    request += part
-                    if b"%@#!" in request:
-                        break
-                sys.stdout.write(request.decode("utf8").replace("%@#!", ""))
-                reply = b""
-                try:
-                    reply = parse_request(request)
-                    reply = response_ok(reply)
-                except ValueError:
-                    reply = response_error(400, "Bad Request")
-                reply += b"%@#!"
-                conn.sendall(reply)
-                conn.close()
+            message_complete = False
+            while not message_complete:
+                part = socket.recv(buffer_length)
+                request += part
+                if b"%@#!" in request:
+                    break
+            sys.stdout.write(request.decode("utf8").replace("%@#!", ""))
+            reply = b""
+            try:
+                reply = parse_request(request)
+                reply = response_ok(reply)
+            except ValueError:
+                reply = response_error(400, "Bad Request")
+            reply += b"%@#!"
+            socket.sendall(reply)
+            socket.close()
         except KeyboardInterrupt:
-            server.close()
+            http_server.close()
             sys.exit()
 
 
@@ -116,4 +106,9 @@ def resolve_uri(uri):
 
 
 if __name__ == '__main__':
-    server()
+    from gevent.server import StreamServer
+    from gevent.monkey import patch_all
+    patch_all()
+    server = StreamServer(('127.0.0.1', 5004), http_server)
+    print('Starting HTTP server on port 5004')
+    server.serve_forever()
