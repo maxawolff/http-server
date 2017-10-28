@@ -21,11 +21,14 @@ def http_server(socket, address):
             try:
                 reply = parse_request(request)
                 reply = response_ok(reply)
+                socket.close()
             except ValueError:
                 reply = response_error(400, "Bad Request")
+            except IOError as error:
+                reply = response_error(404, error)
             reply += b"%@#!"
             socket.sendall(reply)
-            socket.close()
+            #socket.close()
         except KeyboardInterrupt:
             http_server.close()
             sys.exit()
@@ -102,13 +105,13 @@ def resolve_uri(uri):
             file.close()
             return (file_content, type_of_file)
     else:
-        raise ValueError("No file or directory of the given name")
+        raise IOError("No file or directory of the given name")
 
 
 if __name__ == '__main__':
     from gevent.server import StreamServer
     from gevent.monkey import patch_all
     patch_all()
-    server = StreamServer(('127.0.0.1', 5004), http_server)
-    print('Starting HTTP server on port 5004')
+    server = StreamServer(('127.0.0.1', 5006), http_server)
+    print('Starting HTTP server on port 5006')
     server.serve_forever()
