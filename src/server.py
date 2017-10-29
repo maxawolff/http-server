@@ -11,7 +11,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ('127.0.0.1', 5003)
+    address = ('127.0.0.1', 5017)
     server.bind(address)
     server.listen(1)
     while True:
@@ -24,14 +24,15 @@ def server():
                 while not message_complete:
                     part = conn.recv(buffer_length)
                     request += part
-                    if "%@#!" in request:
+                    if b"%@#!" in request:
                         break
                 sys.stdout.write(request.decode("utf8").replace("%@#!", ""))
                 reply = b""
                 try:
                     reply = parse_request(request)
                     reply = response_ok(reply)
-                except ValueError:
+                except ValueError as e:
+                    # print(repr(e))
                     reply = response_error(400, "Bad Request")
                 reply += b"%@#!"
                 conn.sendall(reply)
@@ -40,7 +41,7 @@ def server():
             server.close()
             sys.exit()
 
-            
+
 def response_ok(uri):
     """Return a 200 ok response."""
     return b"HTTP/1.1 200 OK\r\n\r\n" + uri
