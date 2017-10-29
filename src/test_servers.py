@@ -11,6 +11,20 @@ def test_message_shorter():
     assert returned_message == "short"
 
 
+def test_message_empty():
+    """Test for message that has no content."""
+    from client import client
+    returned_message = client("")
+    assert returned_message == ""
+
+
+def test_message_non_alpha():
+    """Test for messages using non alpha characters."""
+    from client import client
+    returned_message = client("123#@$")
+    assert returned_message == "123#@$"
+
+
 def test_message_longer():
     """Test for message longer than the buffer."""
     from client import client
