@@ -52,14 +52,16 @@ def response_ok(uri):
     response_header += response_len_header.encode('utf8')
     if "image" in resolved_uri_contents[1]:
         resolved_uri_contents[0].decode("utf8")
-    full_response = response_header + b"\r\n" + resolved_uri_contents[0].encode('utf8')
+    full_response = response_header + b"\r\n" + resolved_uri_contents[0]\
+        .encode('utf8')
     return full_response
 
 
 def response_error(error_code, reason_phrase):
     """Return a well-formed HTTP error response."""
     response = b"HTTP/1.1 "
-    response += str(error_code).encode('utf8') + b" " + reason_phrase.encode('utf8') + b"\r\n\r\n"
+    response += str(error_code).encode('utf8') + b" " + reason_phrase\
+        .encode('utf8') + b"\r\n\r\n"
     return response
 
 
