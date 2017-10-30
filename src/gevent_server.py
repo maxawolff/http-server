@@ -8,41 +8,28 @@ def http_server(socket, address):
     """Handle incoming connections and send appropriate response."""
     buffer_length = 8
     request = b''
-    while True:
+    message_complete = False
+    while not message_complete:
         try:
-            message_complete = False
-            while not message_complete:
-                part = socket.recv(buffer_length)
-                request += part
-                if b"%@#" in request:
-                    #sys.stdout.write(request.decode("utf8").replace("%@#", ""))
-                    print("wtf")
-                    reply = b""
-                    try:
-                        uri = parse_request(request)
-                        reply = response_ok(uri)
-                    except ValueError:
-                        socket.sendall(response_error(400, "Bad Request"))
-                    except IOError as error:
-                        socket.sendall(response_error(404, error))
-                    reply += b"%@#"
-                    try:
-                        socket.sendall(reply)
-                    except:
-                        pass
-                    break
-
-            # sys.stdout.write(request.decode("utf8").replace("%@#", ""))
-            # reply = b""
-            # try:
-            #     uri = parse_request(request)
-            #     reply = response_ok(uri)
-            # except ValueError:
-            #     socket.sendall(response_error(400, "Bad Request"))
-            # except IOError as error:
-            #     socket.sendall(response_error(404, error))
-            # reply += b"%@#"
-            # socket.sendall(reply)
+            part = socket.recv(buffer_length)
+            request += part
+            if b"%@#" in request:
+                message_complete = True
+                sys.stdout.write(request.decode("utf8").replace("%@#", ""))
+                reply = b""
+                try:
+                    uri = parse_request(request)
+                    reply = response_ok(uri)
+                except ValueError:
+                    socket.sendall(response_error(400, "Bad Request"))
+                except IOError as error:
+                    socket.sendall(response_error(404, error))
+                reply += b"%@#"
+                try:
+                    socket.sendall(reply)
+                except:
+                    pass
+                break
         except KeyboardInterrupt:
             print("\nClosing server")
             socket.close()
