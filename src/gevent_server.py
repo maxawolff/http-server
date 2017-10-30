@@ -7,30 +7,33 @@ import sys
 def http_server(socket, address):
     """Handle incoming connections and send appropriate response."""
     buffer_length = 8
-    while True:
+    request = b''
+    message_complete = False
+    while not message_complete:
         try:
-            request = b''
-            message_complete = False
-            while not message_complete:
-                part = socket.recv(buffer_length)
-                request += part
-                if b"%@#!" in request:
-                    break
-            sys.stdout.write(request.decode("utf8").replace("%@#!", ""))
-            reply = b""
-            try:
-                reply = parse_request(request)
-                reply = response_ok(reply)
-                socket.close()
-            except ValueError:
-                reply = response_error(400, "Bad Request")
-            except IOError as error:
-                reply = response_error(404, error)
-            reply += b"%@#!"
-            socket.sendall(reply)
-            #socket.close()
+            part = socket.recv(buffer_length)
+            request += part
+            if b"%@#" in request:
+                message_complete = True
+                sys.stdout.write(request.decode("utf8").replace("%@#", ""))
+                reply = b""
+                try:
+                    uri = parse_request(request)
+                    reply = response_ok(uri)
+                except ValueError:
+                    socket.sendall(response_error(400, "Bad Request"))
+                except IOError as error:
+                    socket.sendall(response_error(404, error))
+                reply += b"%@#"
+                try:
+                    socket.sendall(reply)
+                except:
+                    pass
+                break
         except KeyboardInterrupt:
-            http_server.close()
+            print("\nClosing server")
+            socket.close()
+            server.close()
             sys.exit()
 
 
@@ -45,14 +48,16 @@ def response_ok(uri):
     response_header += response_len_header.encode('utf8')
     if "image" in resolved_uri_contents[1]:
         resolved_uri_contents[0].decode("utf8")
-    full_response = response_header + b"\r\n" + resolved_uri_contents[0].encode('utf8')
+    full_response = response_header + b"\r\n" + resolved_uri_contents[0]\
+        .encode('utf8')
     return full_response
 
 
 def response_error(error_code, reason_phrase):
     """Return a well-formed HTTP error response."""
     response = b"HTTP/1.1 "
-    response += str(error_code).encode('utf8') + b" " + reason_phrase.encode('utf8') + b"\r\n\r\n"
+    response += str(error_code).encode('utf8') + b" " + reason_phrase\
+        .encode('utf8') + b"\r\n\r\n"
     return response
 
 
@@ -79,7 +84,7 @@ def resolve_uri(uri):
     import mimetypes
     import io
     import os
-    if os.path.exists(uri):  # posible error since in byte not unicode
+    if os.path.exists(uri):
         if (os.path.isdir(uri)):
             list_of_files = os.listdir(uri)
             directory_contents = ""
@@ -112,6 +117,9 @@ if __name__ == '__main__':
     from gevent.server import StreamServer
     from gevent.monkey import patch_all
     patch_all()
-    server = StreamServer(('127.0.0.1', 5006), http_server)
-    print('Starting HTTP server on port 5006')
-    server.serve_forever()
+    server = StreamServer(('127.0.0.1', 5000), http_server)
+    print('Starting HTTP server on port 5000')
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
