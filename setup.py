@@ -9,7 +9,7 @@ setup(
     author="Max Wolff, Joseph Kim",
     author_email=["maxawolff@hotmail.com", "joseph.kim.kr@gmail.com"],
     py_modules=["client,", "server", "gevent_server"],
-    install_requires=[],
+    install_requires=["gevent"],
     extras_require={
         "test": ["pytest", "pytest-cov", "pytest-watch", "tox"],
         "development": ["ipython"]

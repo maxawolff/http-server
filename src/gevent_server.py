@@ -1,6 +1,9 @@
 """Module to create a simple server using gevent."""
 
 from __future__ import unicode_literals
+import io
+import mimetypes
+import os
 import sys
 
 
@@ -81,9 +84,6 @@ def parse_request(request):
 
 def resolve_uri(uri):
     """Return a response body with the content and the type of file."""
-    import mimetypes
-    import io
-    import os
     if os.path.exists(uri):
         if (os.path.isdir(uri)):
             list_of_files = os.listdir(uri)
