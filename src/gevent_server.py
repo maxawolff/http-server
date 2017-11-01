@@ -1,42 +1,41 @@
-# -*- coding: utf-8 -*-
-"""Module to create an echo server."""
+"""Module to create a simple server using gevent."""
 
 from __future__ import unicode_literals
-import socket
+import io
+import mimetypes
+import os
 import sys
 
 
-def server():
-    """Accept client connection and sends response back to client."""
-    server = socket.socket(socket.AF_INET,
-                           socket.SOCK_STREAM,
-                           socket.IPPROTO_TCP)
-    address = ('127.0.0.1', 5000)
-    server.bind(address)
-    server.listen(1)
-    while True:
+def http_server(socket, address):
+    """Handle incoming connections and send appropriate response."""
+    buffer_length = 8
+    request = b''
+    message_complete = False
+    while not message_complete:
         try:
-            conn, addr = server.accept()
-            request = b''
-            if conn:
-                buffer_length = 8
-                message_complete = False
-                while not message_complete:
-                    part = conn.recv(buffer_length)
-                    request += part
-                    if b"%@#!" in request:
-                        break
-                sys.stdout.write(request.decode("utf8").replace("%@#!", ""))
+            part = socket.recv(buffer_length)
+            request += part
+            if b"%@#" in request:
+                message_complete = True
+                sys.stdout.write(request.decode("utf8").replace("%@#", ""))
                 reply = b""
                 try:
-                    reply = parse_request(request)
-                    reply = response_ok(reply)
+                    uri = parse_request(request)
+                    reply = response_ok(uri)
                 except ValueError:
-                    reply = response_error(400, "Bad Request")
-                reply += b"%@#!"
-                conn.sendall(reply)
-                conn.close()
+                    socket.sendall(response_error(400, "Bad Request"))
+                except IOError as error:
+                    socket.sendall(response_error(404, error))
+                reply += b"%@#"
+                try:
+                    socket.sendall(reply)
+                except:
+                    pass
+                break
         except KeyboardInterrupt:
+            print("\nClosing server")
+            socket.close()
             server.close()
             sys.exit()
 
@@ -85,10 +84,7 @@ def parse_request(request):
 
 def resolve_uri(uri):
     """Return a response body with the content and the type of file."""
-    import mimetypes
-    import io
-    import os
-    if os.path.exists(uri):  # posible error since in byte not unicode
+    if os.path.exists(uri):
         if (os.path.isdir(uri)):
             list_of_files = os.listdir(uri)
             directory_contents = ""
@@ -114,8 +110,16 @@ def resolve_uri(uri):
             file.close()
             return (file_content, type_of_file)
     else:
-        raise ValueError("No file or directory of the given name")
+        raise IOError("No file or directory of the given name")
 
 
 if __name__ == '__main__':
-    server()
+    from gevent.server import StreamServer
+    from gevent.monkey import patch_all
+    patch_all()
+    server = StreamServer(('127.0.0.1', 5000), http_server)
+    print('Starting HTTP server on port 5000')
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
